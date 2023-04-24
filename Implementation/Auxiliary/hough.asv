@@ -65,8 +65,7 @@ peaks = [];
 % Here is the code for the interior elements of the H array:
 for i = 2:(nrow-1)
     for j = 2:(ncol-1)
-        if H(i,j) >= thresh && H(i,j) >= H(i-1, j-1) && H(i,j) >= H(i, j-1) && H(i,j) >= H(i-1, j) && H(i,j) >= H(i+1, j+1) && H(i,j) >= H(i+1, j) ...
-                            && H(i,j) >= H(i, j+1) && H(i,j) >= H(i-1, j+1) && H(i,j) >= H(i+1, j-1)
+        if H(i,j) >= thresh && H(i,j) >= H(i-1, j-1) && H(i,j) >= H(i, j-1) && H(i,j) >= H(i-1, j) && H(i,j) >= H(i+1, j+1) && H(i,j) >= H(i+1, j) && H(i,j) >= H(i, j+1) && H(i,j) >= H(i-1, j+1) && H(i,j) >= H(i+1, j-1)
             peaks = [peaks; [i,j]];
         end
     end

@@ -24,8 +24,8 @@
 
 clear; clc; addpath('Auxiliary');
 
-% im = 255 * imread("circle.png");
-im = rgb2gray(imread("TEST_IMAGE_RAMP.jpg"));
+im = 255 * imread("circle.png");
+% im = rgb2gray(imread("TEST_IMAGE_RAMP.jpg"));
 % im = rgb2gray(imread("MAP_TEST.jpg"));
 % im = rgb2gray(imread("SILHOUETTE_2.jpg"));
 
@@ -45,7 +45,7 @@ end
 %% Player Model R-Table
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-load("R_Table.mat");
+% load("R_Table.mat");
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Edge mapping
@@ -72,8 +72,8 @@ figure; imshow(E); title("Edge map of image.");
 
 % Hough transform
 % [peaks, H] = hough(im, R, thresh);
-pixels_per_bin = 9;
-thresh = 40 * pixels_per_bin;
+pixels_per_bin = 1;
+thresh = 50 * pixels_per_bin;
 [peaks, H] = hough_scale_invariant(E, R, thresh, pixels_per_bin);
 if peaks
     peaks = sortrows(peaks, 4, 'descend');
@@ -120,7 +120,7 @@ for i = 1:min(1, size_peaks(1))
     % Translate accumulator array output
     translated_row = peaks(i, 1) * sqrt(pixels_per_bin);
     translated_col = peaks(i, 2) * sqrt(pixels_per_bin);
-    
+
     % Use R-Table to draw detected shape
     for entry = 1:length(R)
 
@@ -136,4 +136,26 @@ end
 final = final(1:nrow, 1:ncol);
 
 figure; imshow(uint8(final)); title("Original image with detected shapes shown in gray.");
+
+
+
+
+
+
+%% UNUSED
+% output = im;
+% [nrow, ncol] = size(output);
+% output = output*255;
+% [num_peaks, ~] = size(peaks);
+% 
+% for i = 1:num_peaks
+%     for r = 1:nrow
+%         for c = 1:ncol
+%             if ((peaks(i,1) - r)^2 + (peaks(i,2) - c)^2 <= (20*peaks(i,3))^2)
+%                 output(r, c) = 150;
+%             end
+%         end
+%     end
+% end
+% figure; imshow(uint8(output)); title("Segmented image with detected shape shown in gray.");
 

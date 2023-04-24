@@ -1,18 +1,18 @@
 function [peaks, H] = hough(E, R, thresh, pixels_per_bin)
 
 % Perform Hough Transform
-[H, coeffs] = myhough(E, R, pixels_per_bin);
+[H, coeffs] = houghtransform(E, R, pixels_per_bin);
 
 % Find peaks in the Hough array
-peaks = myhoughpeaks(H, thresh, coeffs);
+peaks = houghpeaks(H, thresh, coeffs);
 
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% MYHOUGH Hough Transform To Calculate Hough Array
+% houghtransform Hough Transform To Calculate Hough Array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [H, coeffs] = myhough(E, R, pixels_per_bin)
+function [H, coeffs] = houghtransform(E, R, pixels_per_bin)
 
 % Number of rows and columns
 [nrows,ncols] = size(E);
@@ -61,6 +61,7 @@ for r = 1:nrows
                         if hough_coordinate_r < 1
                             hough_coordinate_r = 1;
                         end
+                        
                         hough_coordinate_c = round(c0 / pixels_per_bin);
                         if hough_coordinate_c < 1
                             hough_coordinate_c = 1;
@@ -76,11 +77,12 @@ for r = 1:nrows
 end
 end % function
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% MYHOUGHPEAKS Find Peaks in Hough Array
+% houghpeaks Find Peaks in Hough Array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function peaks = myhoughpeaks(H, thresh, coeffs)
+function peaks = houghpeaks(H, thresh, coeffs)
 [nrow,ncol,nscale] = size(H);
 peaks = [];
 
@@ -90,7 +92,8 @@ for a = 1:nscale
     % Here is the code for the interior elements of the H array:
     for i = 2:(nrow-1)
         for j = 2:(ncol-1)
-            if H(i,j,a) >= thresh && H(i,j,a) >= H(i-1, j-1,a) && H(i,j,a) >= H(i, j-1,a) && H(i,j,a) >= H(i-1, j,a) && H(i,j,a) >= H(i+1, j+1,a) && H(i,j,a) >= H(i+1, j,a) && H(i,j,a) >= H(i, j+1,a) && H(i,j,a) >= H(i-1, j+1,a) && H(i,j,a) >= H(i+1, j-1,a)
+            if H(i,j,a) >= thresh && H(i,j,a) >= H(i-1, j-1,a) && H(i,j,a) >= H(i, j-1,a) && H(i,j,a) >= H(i-1, j,a) && H(i,j,a) >= H(i+1, j+1,a) && H(i,j,a) >= H(i+1, j,a) ...
+                                  && H(i,j,a) >= H(i, j+1,a) && H(i,j,a) >= H(i-1, j+1,a) && H(i,j,a) >= H(i+1, j-1,a)
                 peaks = [peaks; [i,j,coeffs(a),H(i,j,a)]];
             end
         end
