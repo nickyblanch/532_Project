@@ -9,13 +9,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Setup
+%% Setup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear; clc; addpath('Auxiliary');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Test R-Table
+%% Test R-Table
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Circle centered at 0,0 with radius 20
@@ -27,39 +27,84 @@ for x = -20:1:20
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Edge mapping
+%% Edge mapping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-im = 255 * imread("circle.png");
+% im = 255 * imread("circle.png");
+im = rgb2gray(imread("TEST_IMAGE2.jpg"));
+figure; imshow(im); title("Original image.");
 radius = 1;
-threshold = 50;
+threshold = 30;
 [f1, f2, M, A, E] = edge(im, radius, threshold);
-figure; imshow(uint8(E) .* 255); title("Edge map of image.");
+E = uint8(E) * 255;
+figure; imshow(E); title("Edge map of image.");
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Generalized Hough Transform
+%% Dilate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Dilating the edge map helps with segmentation.
+% E = dilate(E, 3, true);
+% figure; imshow(E); title("Dilated edge map of image.");
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Generalized Hough Transform
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Hough transform
-thresh = 82;
-[peaks, H] = hough(im, R, thresh);
+thresh = 40;
+% [peaks, H] = hough(im, R, thresh);
+[peaks, H] = hough_scale_invariant(E, R, thresh);
+peaks = 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Segmentation
+%% Segmentation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-output = segmentation(255*);
+% output = segmentation(E);
+% 
+% % Label segment at corresponds to greatest entry in Hough array
+% [nrow, ncol] = size(output);
+% output = output*255;
+% final = im;
+% 
+% % For all of the peaks
+% for i = 1:length(peaks)
+%     target = output(peaks(i, 1), peaks(i, 2));
+%     for r = 1:nrow
+%         for c = 1:ncol
+%             if output(r, c) == target
+%                 final(r, c) = 150;
+%                 output(r, c) = 150;
+%             end
+%         end
+%     end
+% end
+% figure; imshow(uint8(output)); title("Segmented image with detected shapes shown in gray.");
+% figure; imshow(uint8(final)); title("Original image with detected shapes shown in gray.");
 
-% Label segment at corresponds to greatest entry in Hough array
-[nrow, ncol] = size(output);
-output = output*255;
-target = output(peaks(1, 1), peaks(1, 2));
-for r = 1:nrow
-    for c = 1:ncol
-        if output(r, c) == target
-            output(r, c) = 150;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Segmentation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[nrow, ncol] = size(im);
+final = im;
+
+% For all of the peaks
+% for i = 1:length(peaks)
+for i = 1:10
+
+    % For each pixel
+    for r = 1:nrow
+        for c = 1:ncol
+
+            % If we are in the detected circle
+             if abs((r-peaks(i, 1))^2 + (c-peaks(i, 2))^2) <= (20*peaks(i, 3))^2
+                final(r, c) = 150;
+             end
         end
     end
 end
-figure; imshow(uint8(output)); title("Segmented image with detected shape shown in gray.");
+
+figure; imshow(uint8(final)); title("Original image with detected shapes shown in gray.");
 

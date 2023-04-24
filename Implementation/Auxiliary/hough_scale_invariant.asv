@@ -1,0 +1,118 @@
+function [peaks, H] = hough(E, R, thresh, pixels_per_bin)
+
+% Perform Hough Transform
+[H, coeffs] = myhough(E, R, pixels_per_bin);
+
+% Find peaks in the Hough array
+peaks = myhoughpeaks(H, thresh, coeffs);
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MYHOUGH Hough Transform To Calculate Hough Array
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [H, coeffs] = myhough(E, R, pixels_per_bin)
+
+% Number of rows and columns
+[nrows,ncols] = size(E);
+N = max(nrows, ncols);
+
+
+% Number of entries in the R-Table
+[rrows, rcols] = size(R);
+nentries = length(R);
+
+% Number of scale values
+coeffs = 0.5:0.1:8;
+nscales = length(coeffs);
+
+% Allocate hough (accumulartor) array
+% H = zeros(nrows, ncols, nscales);
+H = zeros(nrows / pixels_er)
+
+% For each pixel in the image
+for r = 1:nrows
+    for c = 1:ncols
+        
+        % If on an edge
+        if E(r,c) == 0
+            
+            % For each entry in the R-Table
+            for i = 1:nentries
+
+                % For each scale value
+                for a = 1:nscales
+                
+                    % Calculate r0 and c0
+                    r0 = round(r + coeffs(a)*R(i, 1));
+                    c0 = round(c + coeffs(a)*R(i, 2));
+                    
+                    % If we are within bounds
+                    if (r0 > 0 && r0 < nrows && c0 > 0 && c0 < ncols)
+    
+                        % Add entry to hough array
+                        H(r0,c0, a) = H(r0,c0, a) + 1;
+                    end
+                end
+            end
+        end
+    end
+end
+end % function
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MYHOUGHPEAKS Find Peaks in Hough Array
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function peaks = myhoughpeaks(H, thresh, coeffs)
+[nrow,ncol,nscale] = size(H);
+peaks = [];
+
+% For each scale factor
+for a = 1:nscale
+
+    % Here is the code for the interior elements of the H array:
+    for i = 2:(nrow-1)
+        for j = 2:(ncol-1)
+            if H(i,j,a) >= thresh && H(i,j,a) >= H(i-1, j-1,a) && H(i,j,a) >= H(i, j-1,a) && H(i,j,a) >= H(i-1, j,a) && H(i,j,a) >= H(i+1, j+1,a) && H(i,j,a) >= H(i+1, j,a) && H(i,j,a) >= H(i, j+1,a) && H(i,j,a) >= H(i-1, j+1,a) && H(i,j,a) >= H(i+1, j-1,a)
+                peaks = [peaks; [i,j,coeffs(a),H(i,j,a)]];
+            end
+        end
+    end
+    
+    % Here is the code for the border elements of the H array:
+    % Top border
+    i = 1;
+    for j = 1:(ncol-1)
+        if H(i,j,a) >= thresh && H(i,j,a) >= H(i, j-1,a) && H(i,j,a) >= H(i+1, j+1,a) && H(i,j,a) >= H(i+1, j,a) && H(i,j,a) >= H(i, j+1,a) && H(i,j,a) >= H(i+1, j-1,a)
+            peaks = [peaks; [i,j,coeffs(a),H(i,j,a)]];
+        end
+    end
+    
+    % Bottom border
+    i = nrow;
+    for j = 1:(ncol-1)
+        if H(i,j,a) >= thresh && H(i,j,a) >= H(i-1, j-1,a) && H(i,j,a) >= H(i, j-1,a) && H(i,j,a) >= H(i-1, j,a) && H(i,j,a) >= H(i, j+1,a) && H(i,j,a) >= H(i-1, j+1,a)
+            peaks = [peaks; [i,j,coeffs(a),H(i,j,a)]];
+        end
+    end
+    
+    % Left border
+    j = 1;
+    for i = 2:(nrow-1)
+        if H(i,j,a) >= thresh && H(i,j,a) >= H(i-1, j,a) && H(i,j,a) >= H(i+1, j+1,a) && H(i,j,a) >= H(i+1, j,a) && H(i,j,a) >= H(i, j+1,a) && H(i,j,a) >= H(i-1, j+1,a)
+            peaks = [peaks; [i,j,coeffs(a),H(i,j,a)]];
+        end
+    end
+    
+    % Right border
+    j = ncol;
+    for i = 2:(nrow-1)
+        if H(i,j,a) >= thresh && H(i,j,a) >= H(i-1, j-1,a) && H(i,j,a) >= H(i, j-1,a) && H(i,j,a) >= H(i-1, j,a) && H(i,j,a) >= H(i+1, j,a) && H(i,j,a) >= H(i+1, j-1,a)
+            peaks = [peaks; [i,j,coeffs(a),H(i,j,a)]];
+        end
+    end
+end
+
+end % function
