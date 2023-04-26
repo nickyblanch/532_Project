@@ -1,7 +1,7 @@
-function [peaks, H] = hough(E, R, thresh, pixels_per_bin)
+function [peaks, H] = hough(E, R, A, thresh, pixels_per_bin)
 
 % Perform Hough Transform
-[H, coeffs] = houghtransform(E, R, pixels_per_bin);
+[H, coeffs] = houghtransform(E, R, A, pixels_per_bin);
 
 % Find peaks in the Hough array
 peaks = houghpeaks(H, thresh, coeffs);
@@ -12,7 +12,7 @@ end
 % houghtransform Hough Transform To Calculate Hough Array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [H, coeffs] = houghtransform(E, R, pixels_per_bin)
+function [H, coeffs] = houghtransform(E, R, A, pixels_per_bin)
 
 % Number of rows and columns
 [nrows,ncols] = size(E);
@@ -24,14 +24,13 @@ N = max(nrows, ncols);
 nentries = length(R);
 
 % Number of scale values
-coeffs = 0.5:0.05:4;
+coeffs = 0.1:0.05:2;
 nscales = length(coeffs);
-
-% Allocate hough (accumulartor) array
-% H = zeros(nrows, ncols, nscales);
 
 % Transform pixels_per_bin so that it can be applied to width and height
 pixels_per_bin = sqrt(pixels_per_bin);
+
+% Allocate hough (accumulator) array
 H = zeros(round(nrows / pixels_per_bin), round(ncols / pixels_per_bin), nscales);
 
 % For each pixel in the image
@@ -44,31 +43,35 @@ for r = 1:nrows
             % For each entry in the R-Table
             for i = 1:nentries
 
-                % For each scale value
-                for a = 1:nscales
-                
-                    % Calculate r0 and c0
-                    r0 = round(r - coeffs(a)*R(i, 1));
-                    c0 = round(c - coeffs(a)*R(i, 2));
+                % If the edge orientation matches entry in R-Table
+                if ( abs(A(r,c) - R(i, 3)) < .1 )
+
+                    % For each scale value
+                    for a = 1:nscales
                     
-                    % If we are within bounds
-                    if (r0 > 0 && r0 < nrows && c0 > 0 && c0 < ncols)
-    
-                        % Add entry to hough array
-                        % H(r0,c0, a) = H(r0,c0, a) + 1;
-
-                        hough_coordinate_r = round(r0 / pixels_per_bin);
-                        if hough_coordinate_r < 1
-                            hough_coordinate_r = 1;
-                        end
+                        % Calculate r0 and c0 using the polar coordinates
+                        % provided by the R-vector
+                        r0 = round(r - coeffs(a)*R(i, 1)*sin(R(i, 2)));
+                        c0 = round(c - coeffs(a)*R(i, 1)*cos(R(i, 2)));
                         
-                        hough_coordinate_c = round(c0 / pixels_per_bin);
-                        if hough_coordinate_c < 1
-                            hough_coordinate_c = 1;
+                        % If we are within bounds
+                        if (r0 > 0 && r0 < nrows && c0 > 0 && c0 < ncols)
+                            
+                            % Calculate coordinates in accumulator array
+                            % based on image coordinates
+                            hough_coordinate_r = round(r0 / pixels_per_bin);
+                            if hough_coordinate_r < 1
+                                hough_coordinate_r = 1;
+                            end
+                            hough_coordinate_c = round(c0 / pixels_per_bin);
+                            if hough_coordinate_c < 1
+                                hough_coordinate_c = 1;
+                            end
+                            
+                            % Increment the accumulator array
+                            H(hough_coordinate_r, hough_coordinate_c, a) =  H(hough_coordinate_r, hough_coordinate_c, a) + 1;
+    
                         end
-
-                        H(hough_coordinate_r, hough_coordinate_c, a) =  H(hough_coordinate_r, hough_coordinate_c, a) + 1;
-
                     end
                 end
             end

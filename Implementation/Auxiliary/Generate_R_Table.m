@@ -12,11 +12,12 @@
 clear;
 clc;
 
+im = rgb2gray(imread("./Silhouettes/2.jpg"));
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generate edgemap of playermodel
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-im = rgb2gray(imread("./Silhouettes/2.jpg"));
 figure; imshow(im); title("Original image.");
 radius = 1;
 threshold = 75;
@@ -39,8 +40,11 @@ for r = 1:nrow
         % If we are on an edge
         if E(r, c) == 0
 
-            % Calculate dispalcement vector to center and add to R-Table
-            R = [R; [r - center(1), c - center(2)]];
+            % Calculate displacement vector to center and add to R-Table
+            % (Magnitude and angle)
+            m = sqrt((r - center(1))^2 + (c - center(2))^2);
+            a = atan2( (r - center(1)), (c - center(2)) );
+            R = [R; [m, a, A(r, c)]];
 
         end
 
@@ -53,8 +57,15 @@ end
 
 test_im = uint8(ones(nrow, ncol) * 255);
 
+% Use R-Table to draw detected shape
 for entry = 1:length(R)
-    test_im(center(1) + R(entry, 1), center(2) + R(entry, 2)) = 0;
+
+    r_coord = round(center(1) + R(entry, 1)*sin(R(entry, 2)));
+    c_coord = round(center(2) + R(entry, 1)*cos(R(entry, 2)));
+
+    if r_coord > 0 && r_coord <= nrow && c_coord > 0 && c_coord <= ncol
+        test_im(r_coord, c_coord) = 155;
+    end
 end
 figure; imshow(test_im); title("Re-created image.")
 

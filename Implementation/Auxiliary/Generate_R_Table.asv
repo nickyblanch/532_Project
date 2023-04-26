@@ -16,7 +16,7 @@ clc;
 %% Generate edgemap of playermodel
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-im = rgb2gray(imread("./Silhouettes/1.jpg"));
+im = rgb2gray(imread("./Silhouettes/2.jpg"));
 figure; imshow(im); title("Original image.");
 radius = 1;
 threshold = 75;
@@ -30,7 +30,7 @@ figure; imshow(E); title("Edge map of image.");
 
 R = [];
 [nrow, ncol] = size(E);
-center = [round(nrow \ 2), round(ncol / 2)];
+center = [round(nrow / 2), round(ncol / 2)];
 
 % For each pixel in the edgemap
 for r = 1:nrow
@@ -40,6 +40,8 @@ for r = 1:nrow
         if E(r, c) == 0
 
             % Calculate dispalcement vector to center and add to R-Table
+            % Magnitude
+            m = 
             R = [R; [r - center(1), c - center(2)]];
 
         end
@@ -49,7 +51,8 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Validate edgemap by re-drawing image
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 test_im = uint8(ones(nrow, ncol) * 255);
 
 for entry = 1:length(R)
@@ -57,4 +60,7 @@ for entry = 1:length(R)
 end
 figure; imshow(test_im); title("Re-created image.")
 
-% Export R-Table
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Export R-Table
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+save("R_Table", 'R');

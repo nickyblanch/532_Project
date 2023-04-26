@@ -24,10 +24,12 @@
 
 clear; clc; addpath('Auxiliary');
 
-im = 255 * imread("circle.png");
-% im = rgb2gray(imread("TEST_IMAGE_RAMP.jpg"));
+im = rgb2gray(imread("TEST_IMAGE_RAMP_LOWRES.jpg"));
+
+% im = rgb2gray(imread("TEST_IMAGE_WHITE_FAR.jpg"));
 % im = rgb2gray(imread("MAP_TEST.jpg"));
 % im = rgb2gray(imread("SILHOUETTE_2.jpg"));
+% im = 255 * imread("circle.png");
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Test R-Table
@@ -36,16 +38,15 @@ im = 255 * imread("circle.png");
 % Circle centered at 0,0 with radius 20
 % x^2 + y^2 = r^2
 R = [];
-for x = -20:1:20
-    y1 = sqrt(20^2 - x^2);
-    R = [R; [x, y1]; [x, -1*y1]];
+for x = 0:.1:2*pi
+    R = [R; [20, x, x]];
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Player Model R-Table
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% load("R_Table.mat");
+load("R_Table.mat");
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Edge mapping
@@ -63,8 +64,8 @@ figure; imshow(E); title("Edge map of image.");
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Dilating the edge map helps with segmentation.
-% E = dilate(E, 3, true);
-% figure; imshow(E); title("Dilated edge map of image.");
+E_dilated = dilate(E, 3);
+figure; imshow(E_dilated); title("Dilated edge map of image.");
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generalized Hough Transform
@@ -72,9 +73,9 @@ figure; imshow(E); title("Edge map of image.");
 
 % Hough transform
 % [peaks, H] = hough(im, R, thresh);
-pixels_per_bin = 1;
-thresh = 50 * pixels_per_bin;
-[peaks, H] = hough_scale_invariant(E, R, thresh, pixels_per_bin);
+pixels_per_bin = 9;
+thresh = 40 * pixels_per_bin;
+[peaks, H] = hough_scale_invariant(E, R, A, thresh, pixels_per_bin);
 if peaks
     peaks = sortrows(peaks, 4, 'descend');
 end
@@ -83,7 +84,7 @@ end
 %% Segmentation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% output = segmentation(E);
+% output = segmentation(E_dilated);
 % 
 % % Label segment at corresponds to greatest entry in Hough array
 % [nrow, ncol] = size(output);
@@ -91,7 +92,7 @@ end
 % final = im;
 % 
 % % For all of the peaks
-% for i = 1:length(peaks)
+% for i = 1:1
 %     target = output(peaks(i, 1), peaks(i, 2));
 %     for r = 1:nrow
 %         for c = 1:ncol
@@ -110,10 +111,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [nrow, ncol] = size(im);
+% final = uint8(255*ones(nrow, ncol));
 final = im;
 
 % For all of the peaks
-% for i = 1:(size(peaks))(1);
 size_peaks = size(peaks);
 for i = 1:min(1, size_peaks(1))
 
@@ -124,18 +125,18 @@ for i = 1:min(1, size_peaks(1))
     % Use R-Table to draw detected shape
     for entry = 1:length(R)
 
-        r_coord = round(translated_row + R(entry, 1)*peaks(i, 3));
-        c_coord = round(translated_col + R(entry, 2)*peaks(i, 3));
+        r_coord = round(translated_row + R(entry, 1)*peaks(i, 3)*sin(R(entry, 2)));
+        c_coord = round(translated_col + R(entry, 1)*peaks(i, 3)*cos(R(entry, 2)));
 
         if r_coord > 0 && r_coord <= nrow && c_coord > 0 && c_coord <= ncol
-            final(r_coord, c_coord) = 155;
+            final(r_coord, c_coord) = 0;
         end
     end
 end
 
 final = final(1:nrow, 1:ncol);
 
-figure; imshow(uint8(final)); title("Original image with detected shapes shown in gray.");
+figure; imshow(uint8(final)); title("Detected shapes shown in gray.");
 
 
 

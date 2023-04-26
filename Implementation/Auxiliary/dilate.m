@@ -1,4 +1,4 @@
-function [out] = dilate(im, structuring_element_size, foreground_zero)
+function [out] = dilate(im, structuring_element_size)
 
 %%%%%%%%%%%%%%%%%%%%%%
 % INPUT:  im, an image
