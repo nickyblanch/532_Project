@@ -26,6 +26,8 @@ clear; clc; addpath('Auxiliary');
 
 im = rgb2gray(imread("TEST_IMAGE_RAMP_LOWRES.jpg"));
 
+% im = rgb2gray(imread("TEST_IMAGE2.jpg"));
+
 % im = rgb2gray(imread("TEST_IMAGE_WHITE_FAR.jpg"));
 % im = rgb2gray(imread("MAP_TEST.jpg"));
 % im = rgb2gray(imread("SILHOUETTE_2.jpg"));
@@ -54,7 +56,7 @@ load("R_Table.mat");
 
 figure; imshow(im); title("Original image.");
 radius = 1;
-threshold = 30;
+threshold = 60;
 [f1, f2, M, A, E] = edge(im, radius, threshold);
 E = uint8(E) * 255;
 figure; imshow(E); title("Edge map of image.");
@@ -74,7 +76,7 @@ figure; imshow(E_dilated); title("Dilated edge map of image.");
 % Hough transform
 % [peaks, H] = hough(im, R, thresh);
 pixels_per_bin = 9;
-thresh = 40 * pixels_per_bin;
+thresh = 30 * pixels_per_bin;
 [peaks, H] = hough_scale_invariant(E, R, A, thresh, pixels_per_bin);
 if peaks
     peaks = sortrows(peaks, 4, 'descend');
