@@ -1,3 +1,6 @@
+
+clear; clc;
+
 % Creating circle test image
 output = zeros(200, 200);
 for i = 1:200
@@ -19,5 +22,6 @@ for i = 1:200
     end
 end
 output(150:175, 20:45) = 1;
-imshow(255*uint8(~output));
-imwrite(uint8(~output), "circle.png");
+output = 255*uint8(~output);
+imshow(output);
+imwrite(output, ".\Test Images\Example Images (Unused)\circle.png");
