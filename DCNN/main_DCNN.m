@@ -1,0 +1,56 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AUTHOR: Nicolas Blanchard
+% DATE: 4/17/23
+% Written for ECE 532 at the University of Arizona
+% Professor Jeffrey Rodriguez, Spring 2023
+% SUMMARY: This program implements a generalized Hough transform to detect
+%          player models in screenshots sourced from Counter-Strike: 
+%          Global Offensive.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% sv_cheats 1; mp_roundtime_defuse 60;mp_roundtime_hostage 60;mp_roundtime 60;mp_restartgame 1; hud_showtargetid 0; r_drawviewmodel 0; bot_freeze 1; bot_stop 1; bot_kick; bot_add ct; 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clear; clc;
+
+addpath('..\Test Images\Cache'); addpath('..\Test Images\Dust II');addpath('..\Test Images\White');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Load trained detector
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+load('initial_detector.mat');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For every image we want to label
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+test_images = dir(fullfile('..\Test Images\Dust II', '*.jpg'));
+test_images = {test_images.name};
+
+for file_index = 1:length(test_images)
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Load image
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    I = imread(char(test_images(1, file_index)));
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Run detector
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    [bboxes,scores,labels] = detect(detector,I);
+
+    if bboxes
+        bboxes = bboxes(1, :);
+    end
+    if scores
+        scores = scores(1);
+    end
+
+    if scores > 0.60
+        I = insertObjectAnnotation(I,"rectangle",bboxes,scores);
+    end
+
+    figure; imshow(I);
+    
+end

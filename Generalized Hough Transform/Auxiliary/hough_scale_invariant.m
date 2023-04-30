@@ -44,7 +44,7 @@ for r = 1:nrows
             for i = 1:nentries
 
                 % If the edge orientation matches entry in R-Table
-                if ( abs(A(r,c) - R(i, 3)) < .2 )
+                if ( abs(A(r,c) - R(i, 3)) < .4 )
 
                     % For each scale value
                     for a = 1:nscales

@@ -7,7 +7,7 @@
 %          player models in screenshots sourced from Counter-Strike: 
 %          Global Offensive.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% sv_cheats 1; mp_roundtime_defuse 60;mp_roundtime_hostage 60;mp_roundtime 60;mp_restartgame 1; hud_showtargetid 0; r_drawviewmodel 0; bot_freeze 1; bot_stop 1; bot_kick; bot_add ct; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Setup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -16,7 +16,7 @@ clear; clc;
 
 % Set to TRUE for the program to segment the image. Set to FALSE for the
 % program to simply label the center of the detected player model with a circle.
-segment_flag = false;
+segment_flag = true;
 
 addpath('Auxiliary'); addpath('Silhouettes'); addpath('R-Table');
 addpath('..\Test Images\Cache'); addpath('..\Test Images\Dust II');addpath('..\Test Images\White');
@@ -48,12 +48,13 @@ load("R_Table.mat");
 test_images = dir(fullfile('..\Test Images\White', '*.jpg'));
 test_images = {test_images.name};
 
-for file_index = 1:length(test_images)
+for file_index = 1:10 %length(test_images)
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Load image
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    im = rgb2gray(imread(char(test_images(1, file_index))));
+    original_image = imread(char(test_images(1, file_index)));
+    im = rgb2gray(original_image);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Edge mapping
@@ -63,7 +64,7 @@ for file_index = 1:length(test_images)
     % figure; imshow(im); title("Original image.");
 
     radius = 1;
-    threshold = 30;
+    threshold = 40;
     [f1, f2, M, A, E] = edge(im, radius, threshold);
     E = uint8(E) * 255;
 
@@ -86,7 +87,7 @@ for file_index = 1:length(test_images)
     
     % Hough transform
     pixels_per_bin = 9;
-    thresh = 50 * pixels_per_bin;
+    thresh =  40 * pixels_per_bin;
     [peaks, H] = hough_scale_invariant(E, R, A, thresh, pixels_per_bin);
     if peaks
         peaks = sortrows(peaks, 4, 'descend');
@@ -131,7 +132,7 @@ for file_index = 1:length(test_images)
     if ~segment_flag
         [nrow, ncol] = size(im);
         % final = uint8(255*ones(nrow, ncol));
-        final = im;
+        final = original_image;
         
         % For all of the peaks
         size_peaks = size(peaks);
@@ -156,15 +157,16 @@ for file_index = 1:length(test_images)
             for r = 1:nrow
                 for c = 1:ncol
                     if ((r-translated_row)^2 + (c-translated_col)^2 <= 5^2)
-                        final(r,c) = 155;
+                        final(r,c, :) = 155;
                     end
                 end
             end
+            disp(file_index + " - Peak Detected at (" + translated_row + ", " + translated_col + ")" + " with " + peaks(i, 4) + " counts.");
         end
         
-        final = final(1:nrow, 1:ncol);
+        final = final(1:nrow, 1:ncol, :);
         
-        figure; imshow(uint8(final)); title(file_index + " - Detected shapes shown in gray.");
+        figure; imshow(final); title(file_index + " - Detected shapes shown in gray.");
     end
 
 end
